@@ -22,6 +22,26 @@ class Todo {
       this.input.value = '';
    }
 
+
+   animacia(item, num) {
+      let count = 1;
+      let moveModal;
+
+      const anim = () => {
+         moveModal = requestAnimationFrame(anim);
+         count += num;
+         console.log('count: ', count);
+
+         item.style.opacity = count;
+         if (count < 0) {
+            cancelAnimationFrame(moveModal);
+            this.render();
+         }
+      };
+      moveModal = requestAnimationFrame(anim);
+   }
+
+
    createItem(todo) {
       const li = document.createElement('li');
       li.classList.add('todo-item');
@@ -70,7 +90,8 @@ class Todo {
       this.todoData.forEach((item, iKey) => {
          if (target.closest('.todo-item').key === item.key) {
             this.todoData.delete(iKey);
-            this.render();
+
+            this.animacia(target.closest('.todo-item'), -0.04);
          }
       });
    }
@@ -79,11 +100,10 @@ class Todo {
       this.todoData.forEach((item)=> {
          if (target.closest('.todo-item').key === item.key){
             item.conpleted = !item.conpleted;
-            this.render();
+            this.animacia(target.closest('.todo-item'), -0.03);
          }
       });
    }
-
 
    handler() {
       this.todoContainer.addEventListener('click', (e)=> {
@@ -92,8 +112,28 @@ class Todo {
             this.completedItem(target);
          } else if (target.matches('.todo-remove')) {
             this.deliteItem(target);
+         } else if (target.matches('.todo-edit')) {
+            this.editItem(target);
          }
       });
+   }
+
+   editItem(target) {
+      this.todoData.forEach((item) => {
+         if (target.closest('.todo-item').key === item.key) {
+            
+            if (!target.closest('.todo-item').hasAttribute('contenteditable')){
+               target.closest('.todo-item').setAttribute('contenteditable', 'true');
+
+               target.closest('.todo-item').addEventListener('blur', () => {
+                  target.closest('.todo-item').removeAttribute('contenteditable');
+                  item.value = target.closest('.todo-item').textContent.trim();
+                  this.render();
+               });
+            } 
+         }
+      });
+
    }
 
    init() {
